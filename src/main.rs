@@ -7,34 +7,35 @@ use std::time::Duration;
 #[clap(author = "Henry Senanian", version, about)]
 /// Application configuration
 struct Args {
-    /// whether to be verbose
-    #[arg(short = 'v')]
-    verbose: bool,
-
-    /// an optional name to greet
+    /// path of serial device
     #[arg()]
-    dev: Option<String>,
+    dev: String,
 
+    /// baudrate to be used. If omitted, uses 921600
+    #[arg(short, long)]
+    baudrate: Option<u32>,
+
+    /// path of binary to be flashed
     #[arg()]
-    baudrate: Option<String>,
+    bin: String,
 }
 
 fn main() {
     let args = Args::parse();
-    if args.verbose {
-        println!("DEBUG {args:?}");
-    }
 
     let ports = serialport::available_ports().expect("No ports found");
     // let port
     for p in &ports {
         println!("{}", p.port_name);
-        if args.dev.clone().unwrap_or_default() == p.port_name {
+        if args.dev == p.port_name {
             println!("valid arg");
         }
     }
 
-    let mut port = serialport::new(args.dev.clone().unwrap_or_default(), 9600)
+    let baudrate = args.baudrate.unwrap_or(921600);
+    println!("Using {} with {} baud.", args.dev, baudrate);
+
+    let mut port = serialport::new(args.dev, baudrate)
         .timeout(Duration::from_millis(10))
         .open()
         .expect("Failed to open port");

@@ -6,7 +6,7 @@
     inputs.process-compose-flake.flakeModule
     inputs.cargo-doc-live.flakeModule
   ];
-  perSystem = { config, self', pkgs, lib, ... }: {
+  perSystem = { config, self, pkgs, lib, ... }: {
     rust-project.crates."serial-rs-pandlink".crane.args = {
       buildInputs = with pkgs; [
         pkg-config
@@ -17,6 +17,6 @@
         ]
       );
     };
-    packages.default = self'.packages.serial-rs-pandlink;
+    packages.default = self.packages.serial-rs-pandlink;
   };
 }

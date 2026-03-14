@@ -1,4 +1,7 @@
 use clap::Parser;
+use serialport::{self, SerialPort, SerialPortInfo};
+use std::io::{Read, Write};
+use std::time::Duration;
 
 #[derive(Parser, Debug)]
 #[clap(author = "Henry Senanian", version, about)]
@@ -10,7 +13,10 @@ struct Args {
 
     /// an optional name to greet
     #[arg()]
-    name: Option<String>,
+    dev: Option<String>,
+
+    #[arg()]
+    baudrate: Option<String>,
 }
 
 fn main() {
@@ -18,8 +24,31 @@ fn main() {
     if args.verbose {
         println!("DEBUG {args:?}");
     }
-    println!(
-        "Hello {} (from serial-rs-pandlink)!",
-        args.name.unwrap_or("world".to_string())
-    );
+
+    let ports = serialport::available_ports().expect("No ports found");
+    // let port
+    for p in &ports {
+        println!("{}", p.port_name);
+        if args.dev.clone().unwrap_or_default() == p.port_name {
+            println!("valid arg");
+        }
+    }
+
+    let mut port = serialport::new(args.dev.clone().unwrap_or_default(), 9600)
+        .timeout(Duration::from_millis(10))
+        .open()
+        .expect("Failed to open port");
+
+    let mut serial_buf: Vec<u8> = vec![0; 32];
+    match port.read(serial_buf.as_mut_slice()) {
+        Ok(t) => println!("Read {} bytes: {:?}", t, &serial_buf[..t]),
+        Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => (),
+        Err(e) => eprintln!("{:?}", e),
+    };
+
+    // println!(
+    //     "Updating using {} with baudrate {}...",
+    //     args.dev.unwrap(),
+    //     args.baudrate.unwrap()
+    // );
 }

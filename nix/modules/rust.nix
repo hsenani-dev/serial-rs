@@ -8,7 +8,10 @@
   ];
   perSystem = { config, self', pkgs, lib, ... }: {
     rust-project.crates."serial-rs-pandlink".crane.args = {
-      buildInputs = lib.optionals pkgs.stdenv.isDarwin (
+      buildInputs = with pkgs; [
+        pkg-config
+        udev
+      ] ++ lib.optionals pkgs.stdenv.isDarwin (
         with pkgs.darwin.apple_sdk.frameworks; [
           IOKit
         ]

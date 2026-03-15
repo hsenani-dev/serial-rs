@@ -11,6 +11,7 @@
         just
         nixd # Nix language server
         bacon
+        nil
         config.process-compose.cargo-doc-live.outputs.package
       ];
     };
